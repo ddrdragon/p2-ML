@@ -2,6 +2,11 @@ package edu.njit.cloudComputing.project2;
 
 import org.apache.spark.SparkConf;
 
+
+import org.apache.spark.ml.Pipeline;
+import org.apache.spark.ml.PipelineModel;
+import org.apache.spark.ml.PipelineStage;
+import org.apache.spark.ml.classification.LogisticRegressionTrainingSummary;
 import org.apache.spark.ml.feature.StringIndexer;
 import org.apache.spark.ml.feature.VectorAssembler;
 import org.apache.spark.sql.SparkSession;
@@ -22,13 +27,17 @@ import org.apache.spark.sql.types.StructType;
 public class Training
 {
     public static void main( String[] args ) {
-        // *************
-//        System.setProperty("hadoop.home.dir", "D:/hadoop-3.2.2");
-        // *************
 
+        boolean local = true;
 
-//        String MASTER_URI = "local";
         String MASTER_URI = "spark://ip-172-31-28-8.ec2.internal:7077";
+        String PATH = "../";
+
+        if(local) {
+            System.setProperty("hadoop.home.dir", "D:/hadoop-3.2.2");
+            MASTER_URI = "local";
+            PATH = "";
+        }
 
         SparkConf conf = new SparkConf().setAppName("Training").setMaster(MASTER_URI);
 
@@ -56,8 +65,7 @@ public class Training
                 .schema(schema)
                 .option("header", "true")
                 .option("sep", ";")
-//                .load("src/main/resources/TrainingDataset.csv");
-                .load("TrainingDataset.csv");
+                .load(PATH + "TrainingDataset.csv");
 
         String[] featureCols = new String[]{
                 "fixed acidity",
@@ -92,8 +100,7 @@ public class Training
 
         try {
             mlrModel.write().overwrite().save("model");
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
         }
 

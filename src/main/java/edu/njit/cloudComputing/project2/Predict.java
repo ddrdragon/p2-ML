@@ -20,15 +20,8 @@ import java.io.IOException;
 
 public class Predict {
     public static void main( String[] args ) {
-        // *************
-//        System.setProperty("hadoop.home.dir", "D:/hadoop-3.2.2");
-        // *************
 
-
-//        String MASTER_URI = "local";
-        String MASTER_URI = "spark://ip-172-31-28-8.ec2.internal:7077";
-
-        SparkConf conf = new SparkConf().setAppName("Training").setMaster(MASTER_URI);
+        SparkConf conf = new SparkConf().setAppName("Predict").setMaster("local");
 
         SparkSession spark = SparkSession
                 .builder()
@@ -54,7 +47,6 @@ public class Predict {
                 .schema(schema)
                 .option("header", "true")
                 .option("sep", ";")
-//                .load("src/main/resources/ValidationDataset.csv");
                 .load("ValidationDataset.csv");
 
         String[] featureCols = new String[]{
@@ -80,22 +72,26 @@ public class Predict {
         StringIndexer indexer = new StringIndexer().setInputCol("quality").setOutputCol("label");
         Dataset<Row> validation = indexer.fit(vectorDataFrame).transform(vectorDataFrame);
 
+        System.out.println(">>>");
+        validation.show();
+
         LogisticRegressionModel logisticRegressionModel = LogisticRegressionModel.read().load("model");
 
         Dataset<Row> predictions = logisticRegressionModel.transform(validation);
 
-        predictions.select("prediction", "indexedLabel", "features").show(10);
+        System.out.println(">>> prediction");
+        predictions.select("prediction", "label", "features").show(10);
 
         MulticlassClassificationEvaluator evaluator = new MulticlassClassificationEvaluator()
-                .setLabelCol("indexedLabel")
+                .setLabelCol("label")
                 .setPredictionCol("prediction")
                 .setMetricName("accuracy");
 
         double accuracy = evaluator.evaluate(predictions);
-        System.out.println("Accuracy = " + accuracy);
+        System.out.println(">>> Accuracy = " + accuracy);
 
         MulticlassMetrics rm2 = new MulticlassMetrics(predictions.select("prediction", "label"));
-        System.out.println("F1: " + rm2.weightedFMeasure());
+        System.out.println(">>> F1 = " + rm2.weightedFMeasure());
 
         spark.stop();
     }
