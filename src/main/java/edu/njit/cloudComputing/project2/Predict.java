@@ -1,9 +1,6 @@
 package edu.njit.cloudComputing.project2;
 
-import org.apache.spark.SparkConf;
-import org.apache.spark.ml.classification.LogisticRegression;
 import org.apache.spark.ml.classification.LogisticRegressionModel;
-import org.apache.spark.ml.classification.RandomForestClassificationModel;
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 import org.apache.spark.ml.feature.StringIndexer;
 import org.apache.spark.ml.feature.VectorAssembler;
@@ -16,16 +13,13 @@ import org.apache.spark.sql.types.Metadata;
 import org.apache.spark.sql.types.StructField;
 import org.apache.spark.sql.types.StructType;
 
-import java.io.IOException;
-
 public class Predict {
     public static void main( String[] args ) {
 
-        SparkConf conf = new SparkConf().setAppName("Predict").setMaster("local");
-
         SparkSession spark = SparkSession
                 .builder()
-                .config(conf)
+                .appName("Predict")
+                .master("local")
                 .getOrCreate();
 
         StructType schema = DataTypes.createStructType(new StructField[] {
@@ -72,14 +66,10 @@ public class Predict {
         StringIndexer indexer = new StringIndexer().setInputCol("quality").setOutputCol("label");
         Dataset<Row> validation = indexer.fit(vectorDataFrame).transform(vectorDataFrame);
 
-        System.out.println(">>>");
-        validation.show();
-
         LogisticRegressionModel logisticRegressionModel = LogisticRegressionModel.read().load("model");
 
         Dataset<Row> predictions = logisticRegressionModel.transform(validation);
 
-        System.out.println(">>> prediction");
         predictions.select("prediction", "label", "features").show(10);
 
         MulticlassClassificationEvaluator evaluator = new MulticlassClassificationEvaluator()
@@ -88,9 +78,9 @@ public class Predict {
                 .setMetricName("accuracy");
 
         double accuracy = evaluator.evaluate(predictions);
-        System.out.println(">>> Accuracy = " + accuracy);
-
         MulticlassMetrics rm2 = new MulticlassMetrics(predictions.select("prediction", "label"));
+
+        System.out.println(">>> Accuracy = " + accuracy);
         System.out.println(">>> F1 = " + rm2.weightedFMeasure());
 
         spark.stop();
