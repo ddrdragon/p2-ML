@@ -1,5 +1,6 @@
 package edu.njit.cloudComputing.project2;
 
+import org.apache.spark.SparkConf;
 import org.apache.spark.ml.classification.LogisticRegressionModel;
 import org.apache.spark.ml.evaluation.MulticlassClassificationEvaluator;
 import org.apache.spark.ml.feature.StringIndexer;
@@ -41,7 +42,7 @@ public class Predict {
                 .schema(schema)
                 .option("header", "true")
                 .option("sep", ";")
-                .load("ValidationDataset.csv");
+                .load("TestDataset.csv");
 
         String[] featureCols = new String[]{
                 "fixed acidity",

@@ -30,7 +30,7 @@ DokerHub: https://hub.docker.com/repository/docker/xd59/cs643-project2
 
 3. Run training application using:
    
-   `spark-submit --class edu.njit.cloudComputing.project2.Training Master-1.0.jar`
+   `spark-submit --class edu.njit.cloudComputing.project2.Training master-1.0.jar`
 
    Then, the model will be saved in the current directory.
 
@@ -42,8 +42,21 @@ DokerHub: https://hub.docker.com/repository/docker/xd59/cs643-project2
 
 2. Run prediction application using: 
 
-   `spark-submit --class edu.njit.cloudComputing.project2.Predict Master-1.0.jar`
+   `spark-submit --class edu.njit.cloudComputing.project2.Predict master-1.0.jar`
 
+
+### Build Docker Image
+
+1. Run the following command under the direction of Dockerfile:
+
+   `docker build -t prediction .`
+
+   
+2. Push to Docker hub: 
+   
+   `docker tag prediction:latest xd59/cs643-project2:latest`
+
+   `docker push xd59/cs643-project2:latest`
 
 ### Run Prediction Application within Docker
 
@@ -55,8 +68,8 @@ DokerHub: https://hub.docker.com/repository/docker/xd59/cs643-project2
 
 3. Run prediction application: 
 
-   `docker container run -p 8000:3000 -it prediction /bin/bash`
+   `docker run -it xd59/cs643-project2:latest`
 
 
 ###### Please check the latest version on github. 
-###### Current version 1.1
+###### Current version 2.0
